@@ -1,12 +1,15 @@
 import json
 
+
+from dotenv import load_dotenv
+from agents.ben_graham import ben_graham_agent
 from agents.fundamentals import fundamentals_agent
 from agents.technicals import technical_analyst
 from tools.api import *
 from utils.ProgressBar import progress
 import datetime
 if __name__ == '__main__':
-
+    load_dotenv()
     progress.start()
 
 
@@ -25,13 +28,15 @@ if __name__ == '__main__':
     # end_date_str = end_date.strftime('%Y-%m-%d')
     # start_date_str = start_date.strftime('%Y-%m-%d')
 
-    prices = get_prices(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01")
-    analyst = technical_analyst(prices)
-    print(json.dumps(analyst, indent=4, ensure_ascii=False))
+    # prices = get_prices(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01")
+    # analyst = technical_analyst(prices)
+    # print(json.dumps(analyst, indent=4, ensure_ascii=False))
+    #
+    # agent = fundamentals_agent(ticker="AAPL", end_date="2023-10-01")
+    #
+    # print(json.dumps(agent, indent=4, ensure_ascii=False))
 
-    agent = fundamentals_agent(ticker="AAPL", end_date="2023-10-01")
-
-    print(json.dumps(agent, indent=4, ensure_ascii=False))
+    ben_graham_agent(ticker="AAPL", end_date="2023-10-01")
 
     # news = get_company_news(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01" )
     #

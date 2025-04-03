@@ -4,7 +4,12 @@ import requests
 
 from data.models import *
 
-api_key ='110a1382-393e-4aa9-a625-cb2cf5dc935d'
+
+proxies = {
+    'http': 'http://127.0.0.1:7890',
+    'https':'https://127.0.0.1:7890',
+}
+
 
 def call_deepseek(
     prompt: str,
@@ -13,7 +18,7 @@ def call_deepseek(
 ) -> str:
     from openai import OpenAI
 
-    client = OpenAI(api_key="sk-0d0ed38b60b54b6880c3288cea1a70ca", base_url="https://api.deepseek.com")
+    client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
 
     response = client.chat.completions.create(
         model="deepseek-chat",
@@ -30,8 +35,9 @@ def call_deepseek(
 
 
 def get_prices(ticker: str, start_date: str, end_date: str) -> list[Price]:
-
-    headers = {"X-API-KEY": api_key}
+    headers = {}
+    if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
+        headers["X-API-KEY"] = api_key
 
     url = f"https://api.financialdatasets.ai/prices/?ticker={ticker}&interval=day&interval_multiplier=1&start_date={start_date}&end_date={end_date}"
     response = requests.get(url, headers=headers)
@@ -54,8 +60,9 @@ def get_financial_metrics(
     period: str = "ttm",
     limit: int = 10,
 ) -> list[FinancialMetrics]:
-
-    headers = {"X-API-KEY": api_key}
+    headers = {}
+    if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
+        headers["X-API-KEY"] = api_key
 
     url = f"https://api.financialdatasets.ai/financial-metrics/?ticker={ticker}&report_period_lte={end_date}&limit={limit}&period={period}"
     response = requests.get(url, headers=headers)
@@ -77,8 +84,9 @@ def search_line_items( ticker: str, line_items: list[str], end_date: str,
                        period: str = "ttm",
                        limit: int = 10
 ) -> list[LineItem]:
-
-    headers = {"X-API-KEY": api_key}
+    headers = {}
+    if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
+        headers["X-API-KEY"] = api_key
 
     url = "https://api.financialdatasets.ai/financials/search/line-items"
 
@@ -108,8 +116,9 @@ def get_insider_trades(
     start_date: str | None = None,
     limit: int = 1000,
 ) -> list[InsiderTrade]:
-
-    headers = {"X-API-KEY": api_key}
+    headers = {}
+    if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
+        headers["X-API-KEY"] = api_key
 
     all_trades = []
     current_end_date = end_date
@@ -166,7 +175,9 @@ def get_company_news(
         if start_date:
             url += f"&start_date={start_date}"
         url += f"&limit={limit}"
-        headers = {"X-API-KEY": api_key}
+        headers = {}
+        if api_key := os.environ.get("FINANCIAL_DATASETS_API_KEY"):
+            headers["X-API-KEY"] = api_key
 
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
