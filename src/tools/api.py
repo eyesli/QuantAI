@@ -4,7 +4,7 @@ import requests
 
 from data.models import *
 
-api_key ='you key '
+api_key ='110a1382-393e-4aa9-a625-cb2cf5dc935d'
 
 def call_deepseek(
     prompt: str,
@@ -13,7 +13,7 @@ def call_deepseek(
 ) -> str:
     from openai import OpenAI
 
-    client = OpenAI(api_key="you key ", base_url="https://api.deepseek.com")
+    client = OpenAI(api_key="sk-0d0ed38b60b54b6880c3288cea1a70ca", base_url="https://api.deepseek.com")
 
     response = client.chat.completions.create(
         model="deepseek-chat",
@@ -34,7 +34,7 @@ def get_prices(ticker: str, start_date: str, end_date: str) -> list[Price]:
     headers = {"X-API-KEY": api_key}
 
     url = f"https://api.financialdatasets.ai/prices/?ticker={ticker}&interval=day&interval_multiplier=1&start_date={start_date}&end_date={end_date}"
-    response = requests.get(url, headers=headers,verify=False)
+    response = requests.get(url, headers=headers)
     if response.status_code != 200:
         raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
 
@@ -54,13 +54,11 @@ def get_financial_metrics(
     period: str = "ttm",
     limit: int = 10,
 ) -> list[FinancialMetrics]:
-    """Fetch financial metrics from cache or API."""
-
 
     headers = {"X-API-KEY": api_key}
 
     url = f"https://api.financialdatasets.ai/financial-metrics/?ticker={ticker}&report_period_lte={end_date}&limit={limit}&period={period}"
-    response = requests.get(url, headers=headers,verify=False)
+    response = requests.get(url, headers=headers)
     if response.status_code != 200:
         raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
 
@@ -75,15 +73,11 @@ def get_financial_metrics(
     return financial_metrics
 
 
-def search_line_items(
-    ticker: str,
-    line_items: list[str],
-    end_date: str,
-    period: str = "ttm",
-    limit: int = 10,
+def search_line_items( ticker: str, line_items: list[str], end_date: str,
+                       period: str = "ttm",
+                       limit: int = 10
 ) -> list[LineItem]:
-    """Fetch line items from API."""
-    # If not in cache or insufficient data, fetch from API
+
     headers = {"X-API-KEY": api_key}
 
     url = "https://api.financialdatasets.ai/financials/search/line-items"
@@ -119,33 +113,33 @@ def get_insider_trades(
 
     all_trades = []
     current_end_date = end_date
-    
+
     while True:
         url = f"https://api.financialdatasets.ai/insider-trades/?ticker={ticker}&filing_date_lte={current_end_date}"
         if start_date:
             url += f"&filing_date_gte={start_date}"
         url += f"&limit={limit}"
-        
+
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
             raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
-        
+
         data = response.json()
         response_model = InsiderTradeResponse(**data)
         insider_trades = response_model.insider_trades
-        
+
         if not insider_trades:
             break
 
         all_trades.extend(insider_trades)
-        
+
         # Only continue pagination if we have a start_date and got a full page
         if not start_date or len(insider_trades) < limit:
             break
-            
+
         # Update end_date to the oldest filing date from current batch for next iteration
         current_end_date = min(trade.filing_date for trade in insider_trades).split('T')[0]
-        
+
         # If we've reached or passed the start_date, we can stop
         if current_end_date <= start_date:
             break
@@ -209,7 +203,6 @@ def get_market_cap(
     ticker: str,
     end_date: str,
 ) -> float | None:
-    """Fetch market cap from the API."""
     financial_metrics = get_financial_metrics(ticker, end_date)
     market_cap = financial_metrics[0].market_cap
     if not market_cap:
@@ -219,7 +212,6 @@ def get_market_cap(
 
 
 def prices_to_df(prices: list[Price]) -> pd.DataFrame:
-    """Convert prices to a DataFrame."""
     df = pd.DataFrame([p.model_dump() for p in prices])
     df["Date"] = pd.to_datetime(df["time"])
     df.set_index("Date", inplace=True)

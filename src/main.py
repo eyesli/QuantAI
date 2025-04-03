@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     prices = get_prices(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01")
     analyst = technical_analyst(prices)
+    print(json.dumps(analyst, indent=4, ensure_ascii=False))
 
     agent = fundamentals_agent(ticker="AAPL", end_date="2023-10-01")
 
