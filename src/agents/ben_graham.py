@@ -81,6 +81,7 @@ def ben_graham_agent(ticker: str, end_date:str) -> dict[str, any]:
         ticker=ticker,
         analysis_data=analysis_data
     )
+    print(graham_output)
 
 
 
@@ -298,7 +299,7 @@ def generate_graham_output(
             Analysis Data for {ticker}:
             {analysis_data}
 
-          返回json数据格式如下,不需要有其他任何标注，只需要json数据:
+          返回json数据格式如下,不需要有其他任何标注，只需要json数据:reasoning 使用中文回答
             {{
               "signal": "bullish" or "bearish" or "neutral",
               "confidence": float (0-100),
@@ -307,8 +308,7 @@ def generate_graham_output(
             """
 
     res = call_deepseek(prompt, message)
-    json_loads = json.loads(res)
-    return BenGrahamSignal(**json_loads)
+    return json.loads(res)
 
 
     # Parse the response
