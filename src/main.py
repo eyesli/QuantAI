@@ -1,5 +1,6 @@
 import json
 
+from agents.fundamentals import fundamentals_agent
 from agents.technicals import technical_analyst
 from tools.api import *
 from utils.ProgressBar import progress
@@ -27,7 +28,9 @@ if __name__ == '__main__':
     prices = get_prices(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01")
     analyst = technical_analyst(prices)
 
-    print(json.dumps(analyst, indent=4, ensure_ascii=False))
+    agent = fundamentals_agent(ticker="AAPL", end_date="2023-10-01")
+
+    print(json.dumps(agent, indent=4, ensure_ascii=False))
 
     # news = get_company_news(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01" )
     #

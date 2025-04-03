@@ -4,34 +4,35 @@ import pandas as pd
 import numpy as np
 
 from tools.api import prices_to_df
-from utils.ProgressBar import progress
+from utils.InvestmentStrategy import *
+from utils.ProgressBar import progress, ProgressStatus
 
 
 ##### Technical Analyst #####
 def technical_analyst(prices):
 
-    progress.update("技术分析", "working", "技术分析 start")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "技术分析 start")
 
     if not prices:
-        progress.update("技术分析", "yellow", "Failed: No price data found")
+        progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.ERROR, "Failed: No price data found")
 
 
     # Convert prices to a DataFrame
     prices_df = prices_to_df(prices)
 
-    progress.update("技术分析", "working", "Calculating trend signals")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "Calculating trend signals")
     trend_signals = calculate_trend_signals(prices_df)
 
-    progress.update("技术分析", "working", "Calculating mean reversion")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "Calculating mean reversion")
     mean_reversion_signals = calculate_mean_reversion_signals(prices_df)
 
-    progress.update("技术分析", "working", "Calculating momentum")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "Calculating momentum")
     momentum_signals = calculate_momentum_signals(prices_df)
 
-    progress.update("技术分析", "working", "Analyzing volatility")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "Analyzing volatility")
     volatility_signals = calculate_volatility_signals(prices_df)
 
-    progress.update("技术分析", "working", "Analyzing statistical arbitrage")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "Analyzing statistical arbitrage")
     stat_arb_signals = calculate_stat_arb_signals(prices_df)
 
     # Combine all signals using a weighted ensemble approach
@@ -43,7 +44,7 @@ def technical_analyst(prices):
         "stat_arb": 0.15,
     }
 
-    progress.update("技术分析", "working", "Combining signals")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "Combining signals")
     combined_signal = weighted_signal_combination(
         {
             "trend": trend_signals,
@@ -56,7 +57,7 @@ def technical_analyst(prices):
     )
 
     # Generate detailed analysis report for this ticker
-    progress.update("技术分析", "working", "Generating analysis report")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST, ProgressStatus.WORKING, "Generating analysis report")
     technical_analysis= {
         "signal": combined_signal["signal"],
         "confidence": round(combined_signal["confidence"] * 100),
@@ -88,7 +89,7 @@ def technical_analyst(prices):
             },
         },
     }
-    progress.update("技术分析", "done", "Done")
+    progress.update(InvestmentStrategy.TECHNICAL_ANALYST,ProgressStatus.DONE, "技术分析结束")
     return technical_analysis
 
 
