@@ -298,7 +298,7 @@ def generate_graham_output(
             Analysis Data for {ticker}:
             {analysis_data}
 
-            Return JSON exactly in this format:
+          返回json数据格式如下,不需要有其他任何标注，只需要json数据:
             {{
               "signal": "bullish" or "bearish" or "neutral",
               "confidence": float (0-100),
@@ -307,7 +307,9 @@ def generate_graham_output(
             """
 
     res = call_deepseek(prompt, message)
-    print(res)
+    json_loads = json.loads(res)
+    return BenGrahamSignal(**json_loads)
+
 
     # Parse the response
     # BenGrahamSignal
