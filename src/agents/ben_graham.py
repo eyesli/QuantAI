@@ -6,6 +6,8 @@ from typing_extensions import Literal
 
 import math
 
+from utils.constants import TEMPLATE
+
 
 class BenGrahamSignal(BaseModel):
     signal: Literal["bullish", "bearish", "neutral"]
@@ -293,19 +295,8 @@ def generate_graham_output(
             Return a rational recommendation: bullish, bearish, or neutral, with a confidence level (0-100) and concise reasoning.
             """
 
-
-    message = f"""Based on the following analysis, create a Graham-style investment signal:
-
-            Analysis Data for {ticker}:
-            {analysis_data}
-
-          返回json数据格式如下,不需要有其他任何标注，只需要json数据:reasoning 使用中文回答
-            {{
-              "signal": "bullish" or "bearish" or "neutral",
-              "confidence": float (0-100),
-              "reasoning": "string"
-            }}
-            """
+    intro_text = "Based on the following analysis, create a Graham-style investment signal:"
+    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
 
     res = call_deepseek(prompt, message)
     return json.loads(res)
