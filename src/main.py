@@ -2,10 +2,11 @@ import json
 
 
 from dotenv import load_dotenv
-from agents.ben_graham import ben_graham_agent
-from agents.fundamentals import fundamentals_agent
-from agents.technicals import technical_analyst
-from agents.bill_ackman import bill_ackman_agent
+from strategy.ben_graham import ben_graham_agent
+from strategy.cathie_wood import cathie_wood_agent
+from strategy.fundamentals import fundamentals_agent
+from strategy.technicals import technical_analyst
+from strategy.bill_ackman import bill_ackman_agent
 from tools.api import *
 from utils.ProgressBar import progress
 import datetime
@@ -37,8 +38,8 @@ if __name__ == '__main__':
     #
     # print(json.dumps(agent, indent=4, ensure_ascii=False))
 
-    ben_graham_agent(ticker="soun", end_date="2025-03-01")
-    agent = bill_ackman_agent(ticker="soun", end_date="2025-03-01")
+    # ben_graham_agent(ticker="soun", end_date="2025-03-01")
+    agent = cathie_wood_agent(ticker="soun", end_date="2025-03-01")
     print(agent)
     # news = get_company_news(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01" )
     #
