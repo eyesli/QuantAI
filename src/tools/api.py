@@ -1,21 +1,35 @@
+import json
 import os
 import pandas as pd
 import requests
 
 from data.models import *
-
+from typing import Optional
 
 proxies = {
     'http': 'http://127.0.0.1:7890',
     'https':'https://127.0.0.1:7890',
 }
 
+def extract_json_from_deepseek_response(content: str) -> Optional[dict]:
+    try:
+        json_start = content.find("```json")
+        if json_start != -1:
+            json_text = content[json_start + 7:]  # Skip past ```json
+            json_end = json_text.find("```")
+            if json_end != -1:
+                json_text = json_text[:json_end].strip()
+                return json.loads(json_text)
+    except Exception as e:
+        print(f"Error extracting JSON from Deepseek response: {e}")
+    return None
+
 
 def call_deepseek(
     prompt: str,
     user_message: str,
 
-) -> str:
+) -> Optional[dict]:
     from openai import OpenAI
 
     client = OpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
@@ -31,7 +45,10 @@ def call_deepseek(
         stream=False
     )
 
-    return response.choices[0].message.content
+    return extract_json_from_deepseek_response(response.choices[0].message.content)
+
+
+
 
 
 def get_prices(ticker: str, start_date: str, end_date: str) -> list[Price]:

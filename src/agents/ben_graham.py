@@ -1,3 +1,4 @@
+from typing import Optional
 
 from tools.api import get_financial_metrics, get_market_cap, search_line_items, call_deepseek
 from pydantic import BaseModel
@@ -79,15 +80,21 @@ def ben_graham_agent(ticker: str, end_date:str) -> dict[str, any]:
 
     analysis_data = {"signal": signal, "score": total_score, "max_score": max_possible_score, "earnings_analysis": earnings_analysis, "strength_analysis": strength_analysis, "valuation_analysis": valuation_analysis}
 
-    graham_output = generate_graham_output(
-        ticker=ticker,
-        analysis_data=analysis_data
-    )
-    print(graham_output)
+    prompt = """You are a Benjamin Graham AI agent, making investment decisions using his principles:
+            1. Insist on a margin of safety by buying below intrinsic value (e.g., using Graham Number, net-net).
+            2. Emphasize the company's financial strength (low leverage, ample current assets).
+            3. Prefer stable earnings over multiple years.
+            4. Consider dividend record for extra safety.
+            5. Avoid speculative or high-growth assumptions; focus on proven metrics.
 
+            Return a rational recommendation: bullish, bearish, or neutral, with a confidence level (0-100) and concise reasoning.
+            """
 
+    intro_text = "Based on the following analysis, create a Graham-style investment signal:"
+    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
 
-    return graham_output
+    return call_deepseek(prompt, message)
+
 
 
 def analyze_earnings_stability(metrics: list, financial_line_items: list) -> dict:
@@ -273,35 +280,3 @@ def analyze_valuation_graham(metrics: list, financial_line_items: list, market_c
     # else: already appended details for missing graham_number
 
     return {"score": score, "details": "; ".join(details)}
-
-
-def generate_graham_output(
-    ticker: str,
-    analysis_data: dict[str, any],
-) -> BenGrahamSignal:
-    """
-    Generates an investment decision in the style of Benjamin Graham:
-    - Value emphasis, margin of safety, net-nets, conservative balance sheet, stable earnings.
-    - Return the result in a JSON structure: { signal, confidence, reasoning }.
-    """
-
-    prompt=  """You are a Benjamin Graham AI agent, making investment decisions using his principles:
-            1. Insist on a margin of safety by buying below intrinsic value (e.g., using Graham Number, net-net).
-            2. Emphasize the company's financial strength (low leverage, ample current assets).
-            3. Prefer stable earnings over multiple years.
-            4. Consider dividend record for extra safety.
-            5. Avoid speculative or high-growth assumptions; focus on proven metrics.
-                        
-            Return a rational recommendation: bullish, bearish, or neutral, with a confidence level (0-100) and concise reasoning.
-            """
-
-    intro_text = "Based on the following analysis, create a Graham-style investment signal:"
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
-
-    res = call_deepseek(prompt, message)
-    return json.loads(res)
-
-
-    # Parse the response
-    # BenGrahamSignal
-

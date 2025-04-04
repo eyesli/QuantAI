@@ -37,8 +37,8 @@ if __name__ == '__main__':
     #
     # print(json.dumps(agent, indent=4, ensure_ascii=False))
 
-    ben_graham_agent(ticker="tsla", end_date="2025-04-01")
-    agent = bill_ackman_agent(ticker="tsla", end_date="2025-04-01")
+    ben_graham_agent(ticker="soun", end_date="2025-03-01")
+    agent = bill_ackman_agent(ticker="soun", end_date="2025-03-01")
     print(agent)
     # news = get_company_news(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01" )
     #
