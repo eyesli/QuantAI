@@ -268,37 +268,11 @@ if __name__ == '__main__':
     progress.start()  # 启动进度条（或类似的可视化输出）
 
     try:
+
+        # market_cap = get_market_cap("NVDA", "2025-04-05")
+        # print(market_cap)
         main()  # 执行主逻辑
     except Exception as e:
         print(f"Error: {e}")  # 捕获并打印异常
     finally:
         progress.stop()  # 无论是否报错都停止进度显示
-
-    # # 获取今天日期作为结束日期
-    # end_date = datetime.date.today()
-    # # 计算一年前的日期作为开始日期
-    # start_date = end_date - datetime.timedelta(days=365)
-    #
-    # end_date_str = end_date.strftime('%Y-%m-%d')
-    # start_date_str = start_date.strftime('%Y-%m-%d')
-
-    # prices = get_prices(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01")
-    # analyst = technical_analyst(prices)
-    # print(json.dumps(analyst, indent=4, ensure_ascii=False))
-    #
-    # agent = fundamentals_agent(ticker="AAPL", end_date="2023-10-01")
-    #
-    # print(json.dumps(agent, indent=4, ensure_ascii=False))
-
-    # agent = sentiment_agent(ticker="soun", end_date="2025-03-01")
-    # print(agent)
-    # news = get_company_news(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01" )
-    #
-    # trades = get_insider_trades(ticker="AAPL", start_date="2023-01-01", end_date="2023-08-01")
-    # metrics = get_financial_metrics(ticker="AAPL", end_date="2023-10-01", period="ttm")
-    # cap = get_market_cap(ticker="AAPL", end_date="2023-10-01")
-    # items = search_line_items(ticker="AAPL",
-    #                           line_items=["earnings_per_share", "revenue", "net_income", "book_value_per_share",
-    #                                       "total_assets", "total_liabilities", "current_assets", "current_liabilities",
-    #                                       "dividends_and_other_cash_distributions", "outstanding_shares"],
-    #                           end_date="2023-10-01", period="annual", limit=10)
