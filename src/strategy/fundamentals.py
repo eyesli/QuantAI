@@ -2,8 +2,8 @@
 import json
 
 from tools.api import get_financial_metrics
-from utils.InvestmentStrategy import *
-from utils.ProgressBar import progress, ProgressStatus
+
+from utils.ProgressBar import progress, ProgressStatus, TaskName
 
 
 ##### Fundamental Agent #####
@@ -19,7 +19,7 @@ def fundamentals_agent(ticker: str, end_date: str):
     )
 
     if not financial_metrics:
-        progress.update(InvestmentStrategy.FUNDAMENTALS, ProgressStatus.ERROR, "没有 financial_metrics 数据 " )
+        progress.update(TaskName.FUNDAMENTALS, ProgressStatus.ERROR, "没有 financial_metrics 数据 ")
 
     # Pull the most recent financial metrics
     metrics = financial_metrics[0]
@@ -48,7 +48,7 @@ def fundamentals_agent(ticker: str, end_date: str):
                        f"Op Margin: {operating_margin:.2%}" if operating_margin else "Op Margin: N/A"),
     }
 
-    progress.update(InvestmentStrategy.FUNDAMENTALS, "working", "Analyzing growth")
+    progress.update(TaskName.FUNDAMENTALS, "working", "Analyzing growth")
     # 2. Growth Analysis
     revenue_growth = metrics.revenue_growth
     earnings_growth = metrics.earnings_growth
@@ -68,7 +68,7 @@ def fundamentals_agent(ticker: str, end_date: str):
             f"Earnings Growth: {earnings_growth:.2%}" if earnings_growth else "Earnings Growth: N/A"),
     }
 
-    progress.update(InvestmentStrategy.FUNDAMENTALS, ProgressStatus.WORKING, " Financial Health ")
+    progress.update(TaskName.FUNDAMENTALS, ProgressStatus.WORKING, " Financial Health ")
 
     # 3. Financial Health
     current_ratio = metrics.current_ratio
@@ -91,7 +91,7 @@ def fundamentals_agent(ticker: str, end_date: str):
             f"D/E: {debt_to_equity:.2f}" if debt_to_equity else "D/E: N/A"),
     }
 
-    progress.update(InvestmentStrategy.FUNDAMENTALS, ProgressStatus.WORKING, "Analyzing valuation ratios")
+    progress.update(TaskName.FUNDAMENTALS, ProgressStatus.WORKING, "Analyzing valuation ratios")
 
     # 4. Price to X ratios
     pe_ratio = metrics.price_to_earnings_ratio
@@ -113,7 +113,7 @@ def fundamentals_agent(ticker: str, end_date: str):
                        f"P/S: {ps_ratio:.2f}" if ps_ratio else "P/S: N/A"),
     }
 
-    progress.update(InvestmentStrategy.FUNDAMENTALS, ProgressStatus.WORKING, "Calculating final signal")
+    progress.update(TaskName.FUNDAMENTALS, ProgressStatus.WORKING, "Calculating final signal")
 
     # Determine overall signal
     bullish_signals = signals.count("bullish")
@@ -135,7 +135,7 @@ def fundamentals_agent(ticker: str, end_date: str):
         "confidence": confidence,
         "reasoning": reasoning,
     }
-    progress.update(InvestmentStrategy.FUNDAMENTALS, ProgressStatus.DONE, "基本面分析完成")
+    progress.update(TaskName.FUNDAMENTALS, ProgressStatus.DONE, "基本面分析完成")
     return fundamental_analysis
 
 

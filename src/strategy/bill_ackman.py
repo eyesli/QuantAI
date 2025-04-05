@@ -35,34 +35,11 @@ from utils.constants import TEMPLATE
             管理层继续通过追求低投资回报率的收购来做出糟糕的资本配置决策。目前以自由现金流的18倍估值交易，鉴于运营挑战，没有安全边际……”
     """
 
-def bill_ackman_agent(ticker, end_date):
+def bill_ackman(metrics,financial_line_items,market_cap):
     """
     Analyzes stocks using Bill Ackman's investing principles and LLM reasoning.
     Fetches multiple periods of data so we can analyze long-term trends.
     """
-
-
-    metrics = get_financial_metrics(ticker, end_date, period="annual", limit=5)
-
-    # Request multiple periods of data (annual or TTM) for a more robust long-term view.
-    financial_line_items = search_line_items(
-        ticker,
-        [
-            "revenue",
-            "operating_margin",
-            "debt_to_equity",
-            "free_cash_flow",
-            "total_assets",
-            "total_liabilities",
-            "dividends_and_other_cash_distributions",
-            "outstanding_shares"
-        ],
-        end_date,
-        period="annual",  # or "ttm" if you prefer trailing 12 months
-        limit=5  # fetch up to 5 annual periods (or more if needed)
-    )
-
-    market_cap = get_market_cap(ticker, end_date)
 
     quality_analysis = analyze_business_quality(metrics, financial_line_items)
 
@@ -123,9 +100,8 @@ def bill_ackman_agent(ticker, end_date):
               """
 
     intro_text = "Based on the following analysis, create an Ackman-style investment signal."
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
 
-    return call_deepseek(prompt, message)
+    return analysis_data, intro_text, prompt
 
 
 

@@ -2,16 +2,20 @@ import json
 
 
 from dotenv import load_dotenv
-from strategy.ben_graham import ben_graham_agent
+from strategy.ben_graham import ben_graham
 from strategy.cathie_wood import cathie_wood_agent
 from strategy.charlie_munger import charlie_munger_agent
 from strategy.fundamentals import fundamentals_agent
 from strategy.sentiment import sentiment_agent
 from strategy.technicals import technical_analyst
-from strategy.bill_ackman import bill_ackman_agent
+from strategy.bill_ackman import bill_ackman
 from tools.api import *
-from utils.ProgressBar import progress
+
+from utils.ProgressBar import progress, ProgressStatus, TaskName
 import datetime
+
+from utils.constants import TEMPLATE
+
 if __name__ == '__main__':
     load_dotenv()
     progress.start()
@@ -20,18 +24,69 @@ if __name__ == '__main__':
     start_date="2023-01-01"
     end_date="2023-10-01"
 
-    prices = get_prices(
-        ticker=ticker,
-        start_date=start_date,
-        end_date=end_date,
+    progress.update(TaskName.PREPARE_DATA, ProgressStatus.WORKING, "获取数据开始")
+    prices = get_prices( ticker=ticker, start_date=start_date, end_date=end_date)
+    metrics_limit_10 = get_financial_metrics(ticker, end_date, period="annual", limit=10)
+    metrics_limit_5 = get_financial_metrics(ticker, end_date, period="annual", limit=5)
+
+    financial_line_items1 = search_line_items(ticker,
+                                             ["earnings_per_share",
+                                              "revenue", "net_income",
+                                              "book_value_per_share",
+                                              "total_assets",
+                                              "total_liabilities",
+                                              "current_assets",
+                                              "current_liabilities",
+                                              "dividends_and_other_cash_distributions",
+                                              "outstanding_shares"], end_date, period="annual", limit=10)
+
+
+    financial_line_items2 = search_line_items(
+        ticker,
+        [
+            "revenue",
+            "operating_margin",
+            "debt_to_equity",
+            "free_cash_flow",
+            "total_assets",
+            "total_liabilities",
+            "dividends_and_other_cash_distributions",
+            "outstanding_shares"
+        ],
+        end_date,
+        period="annual",  # or "ttm" if you prefer trailing 12 months
+        limit=5  # fetch up to 5 annual periods (or more if needed)
     )
+    market_cap = get_market_cap(ticker, end_date)
+    progress.update(TaskName.PREPARE_DATA, ProgressStatus.DONE, "数据获取完成")
 
-    # prompt = "You are a helpful assistant."
-    # user_message = "What is the capital of France?中文回答"
-    #
-    # response = call_deepseek(prompt, user_message)
-    # print(response)
 
+
+
+
+
+    response={}
+
+    # 1 本·格雷厄姆策略
+    progress.update(TaskName.BEN_GRAHAM, ProgressStatus.WORKING, TaskName.BEN_GRAHAM.chinese + "分析 开始")
+
+    analysis_data, intro_text, prompt = ben_graham(metrics_limit_10, financial_line_items1, market_cap)
+    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
+    response["ben_graham"] = call_deepseek(prompt, message)
+
+    progress.update(TaskName.BEN_GRAHAM, ProgressStatus.DONE, TaskName.BEN_GRAHAM.chinese + "分析 完成")
+
+    # 2 比尔·阿克曼策略
+    progress.update(TaskName.BILL_ACKMAN, ProgressStatus.WORKING, TaskName.BILL_ACKMAN.chinese + "分析 开始")
+
+    analysis_data, intro_text, prompt = bill_ackman(metrics_limit_5, financial_line_items2, market_cap)
+    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
+    response["bill_ackman"] = call_deepseek(prompt, message)
+
+    progress.update(TaskName.BILL_ACKMAN, ProgressStatus.DONE, TaskName.BILL_ACKMAN.chinese + "分析 完成")
+
+    # 3
+    print(response)
     # # 获取今天日期作为结束日期
     # end_date = datetime.date.today()
     # # 计算一年前的日期作为开始日期
@@ -48,9 +103,9 @@ if __name__ == '__main__':
     #
     # print(json.dumps(agent, indent=4, ensure_ascii=False))
 
-    # ben_graham_agent(ticker="soun", end_date="2025-03-01")
-    agent = sentiment_agent(ticker="soun", end_date="2025-03-01")
-    print(agent)
+
+    # agent = sentiment_agent(ticker="soun", end_date="2025-03-01")
+    # print(agent)
     # news = get_company_news(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01" )
     #
     # trades = get_insider_trades(ticker="AAPL", start_date="2023-01-01", end_date="2023-08-01")

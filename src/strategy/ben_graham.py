@@ -1,23 +1,6 @@
-from typing import Optional
-
-from tools.api import get_financial_metrics, get_market_cap, search_line_items, call_deepseek
-from pydantic import BaseModel
-import json
-from typing_extensions import Literal
-
 import math
 
-from utils.constants import TEMPLATE
-
-
-class BenGrahamSignal(BaseModel):
-    signal: Literal["bullish", "bearish", "neutral"]
-    confidence: float
-    reasoning: str
-
-
-    """
-    Analyzes stocks using Benjamin Graham's classic value-investing principles:
+description = """Analyzes stocks using Benjamin Graham's classic value-investing principles:
     1. Earnings stability over multiple years.
     2. Solid financial strength (low debt, adequate liquidity).
     3. Discount to intrinsic value (e.g. Graham Number or net-net).
@@ -48,17 +31,10 @@ class BenGrahamSignal(BaseModel):
        从而提供足够的安全缓冲以降低投资风险。
 
     这些原则强调了对公司财务健康状况和市场定价的深入分析，
-    帮助投资者做出明智的投资决策。
-    """
-def ben_graham_agent(ticker: str, end_date:str) -> dict[str, any]:
+    帮助投资者做出明智的投资决策。"""
 
 
-    metrics = get_financial_metrics(ticker, end_date, period="annual", limit=10)
-
-    financial_line_items = search_line_items(ticker, ["earnings_per_share", "revenue", "net_income", "book_value_per_share", "total_assets", "total_liabilities", "current_assets", "current_liabilities", "dividends_and_other_cash_distributions", "outstanding_shares"], end_date, period="annual", limit=10)
-
-    market_cap = get_market_cap(ticker, end_date)
-
+def ben_graham(metrics, financial_line_items, market_cap):
     # Perform sub-analyses
     earnings_analysis = analyze_earnings_stability(metrics, financial_line_items)
 
@@ -78,7 +54,9 @@ def ben_graham_agent(ticker: str, end_date:str) -> dict[str, any]:
     else:
         signal = "neutral"
 
-    analysis_data = {"signal": signal, "score": total_score, "max_score": max_possible_score, "earnings_analysis": earnings_analysis, "strength_analysis": strength_analysis, "valuation_analysis": valuation_analysis}
+    analysis_data = {"signal": signal, "score": total_score, "max_score": max_possible_score,
+                     "earnings_analysis": earnings_analysis, "strength_analysis": strength_analysis,
+                     "valuation_analysis": valuation_analysis}
 
     prompt = """You are a Benjamin Graham AI agent, making investment decisions using his principles:
             1. Insist on a margin of safety by buying below intrinsic value (e.g., using Graham Number, net-net).
@@ -91,10 +69,8 @@ def ben_graham_agent(ticker: str, end_date:str) -> dict[str, any]:
             """
 
     intro_text = "Based on the following analysis, create a Graham-style investment signal:"
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
 
-    return call_deepseek(prompt, message)
-
+    return analysis_data, intro_text, prompt
 
 
 def analyze_earnings_stability(metrics: list, financial_line_items: list) -> dict:
@@ -187,7 +163,8 @@ def analyze_financial_strength(metrics: list, financial_line_items: list) -> dic
         details.append("Cannot compute debt ratio (missing total_assets).")
 
     # 3. Dividend track record
-    div_periods = [item.dividends_and_other_cash_distributions for item in financial_line_items if item.dividends_and_other_cash_distributions is not None]
+    div_periods = [item.dividends_and_other_cash_distributions for item in financial_line_items if
+                   item.dividends_and_other_cash_distributions is not None]
     if div_periods:
         # In many data feeds, dividend outflow is shown as a negative number
         # (money going out to shareholders). We'll consider any negative as 'paid a dividend'.

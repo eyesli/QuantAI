@@ -7,7 +7,7 @@ from rich.text import Text
 from rich.style import Style
 from enum import Enum, auto
 
-from utils.InvestmentStrategy import InvestmentStrategy
+
 
 
 class ProgressStatus(Enum):
@@ -15,6 +15,26 @@ class ProgressStatus(Enum):
     WORKING = auto()    # 工作中
     DONE = auto()       # 完成
     ERROR = auto()      # 错误
+
+class TaskName(Enum):
+    FUNDAMENTALS = ("Fundamentals", "基本面策略")
+    BEN_GRAHAM = ("Ben Graham", "本·格雷厄姆策略")
+    RISK_MANAGEMENT = ("Risk Management", "风险管理策略")
+    SENTIMENT = ("Sentiment", "情绪策略")
+    WARREN_BUFFETT = ("Warren Buffett", "巴菲特策略")
+    STANLEY_DRUCKENMILLER = ("Stanley Druckenmiller", "德鲁肯米勒策略")
+    PHIL_FISHER = ("Phil Fisher", "菲尔·费舍尔策略")
+    CHARLIE_MUNGER = ("Charlie Munger", "查理·芒格策略")
+    CATHIE_WOOD = ("Cathie Wood", "凯茜·伍德策略")
+    BILL_ACKMAN = ("Bill Ackman", "比尔·阿克曼策略")
+    TECHNICAL_ANALYST = ("technical_analyst", "技术分析")
+    PREPARE_DATA = ("Prepare data", "准备数据")
+
+    def __init__(self, english: str, chinese: str):
+        self.english = english
+        self.chinese = chinese
+
+
 
 class ProgressBar:
     def __init__(self, task_name: str):
@@ -44,7 +64,7 @@ class MultiProgressBar:
             self.live.stop()
             self.started = False
 
-    def update(self, task_name: InvestmentStrategy, status: ProgressStatus, message: str = ""):
+    def update(self, task_name: TaskName, status: ProgressStatus, message: str = ""):
         if task_name not in self.tasks:
             self.tasks[task_name.english] = ProgressBar(task_name.english)
         self.tasks[task_name.english].set_status(status, message)
