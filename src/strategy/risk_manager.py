@@ -4,13 +4,8 @@ from tools.api import get_prices, prices_to_df
 
 
 ##### Risk Management Agent #####
-def risk_management_agent(ticker,start_date, end_date,portfolio):
+def risk_management_agent(prices,ticker,portfolio):
 
-    prices = get_prices(
-        ticker=ticker,
-        start_date=start_date,
-        end_date=end_date,
-    )
 
     if not prices:
         print(f"Warning: No price data found for {ticker}. Skipping.")

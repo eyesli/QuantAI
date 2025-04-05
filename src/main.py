@@ -16,7 +16,15 @@ if __name__ == '__main__':
     load_dotenv()
     progress.start()
 
+    ticker="SOUN"
+    start_date="2023-01-01"
+    end_date="2023-10-01"
 
+    prices = get_prices(
+        ticker=ticker,
+        start_date=start_date,
+        end_date=end_date,
+    )
 
     # prompt = "You are a helpful assistant."
     # user_message = "What is the capital of France?中文回答"
