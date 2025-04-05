@@ -3,15 +3,10 @@
 from tools.api import get_financial_metrics, get_market_cap, search_line_items
 
 
-##### Valuation Agent #####
-def valuation(ticker: str, end_date: str):
+def valuation(financial_metrics,financial_line_items,market_cap):
     """Performs detailed valuation analysis using multiple methodologies for multiple tickers."""
     # Fetch the financial metrics
-    financial_metrics = get_financial_metrics(
-        ticker=ticker,
-        end_date=end_date,
-        period="ttm",
-    )
+
 
     # Add safety check for financial metrics
     if not financial_metrics:
@@ -20,19 +15,7 @@ def valuation(ticker: str, end_date: str):
     metrics = financial_metrics[0]
 
     # Fetch the specific line_items that we need for valuation purposes
-    financial_line_items = search_line_items(
-        ticker=ticker,
-        line_items=[
-            "free_cash_flow",
-            "net_income",
-            "depreciation_and_amortization",
-            "capital_expenditure",
-            "working_capital",
-        ],
-        end_date=end_date,
-        period="ttm",
-        limit=2,
-    )
+
 
     # Add safety check for financial line items
     if len(financial_line_items) < 2:
@@ -65,8 +48,6 @@ def valuation(ticker: str, end_date: str):
         terminal_growth_rate=0.03,
         num_years=5,
     )
-
-    market_cap = get_market_cap(ticker=ticker, end_date=end_date)
 
     # Calculate combined valuation gap (average of both methods)
     dcf_gap = (dcf_value - market_cap) / market_cap

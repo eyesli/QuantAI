@@ -17,6 +17,7 @@ class ProgressStatus(Enum):
     ERROR = auto()      # 错误
 
 class TaskName(Enum):
+    VALUATION = ("Valuation", "DCF策略&巴菲特策略")
     FUNDAMENTALS = ("Fundamentals", "基本面策略")
     BEN_GRAHAM = ("Ben Graham", "本·格雷厄姆策略")
     RISK_MANAGEMENT = ("Risk Management", "风险管理策略")

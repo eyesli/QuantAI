@@ -1,45 +1,5 @@
 
-from pydantic import BaseModel
-import json
-from typing_extensions import Literal
-from tools.api import get_financial_metrics, get_market_cap, search_line_items, call_deepseek
-from utils.constants import TEMPLATE
-
-
-class WarrenBuffettSignal(BaseModel):
-    signal: Literal["bullish", "bearish", "neutral"]
-    confidence: float
-    reasoning: str
-
-
-def warren_buffett_agent(ticker: str, end_date: str):
-    """Analyzes stocks using Buffett's principles and LLM reasoning."""
-
-
-    # Collect all analysis for LLM reasoning
-    analysis_data = {}
-    buffett_analysis = {}
-
-    # Fetch required data
-    metrics = get_financial_metrics(ticker, end_date, period="ttm", limit=5)
-
-    financial_line_items = search_line_items(
-        ticker,
-        [
-            "capital_expenditure",
-            "depreciation_and_amortization",
-            "net_income",
-            "outstanding_shares",
-            "total_assets",
-            "total_liabilities",
-            "dividends_and_other_cash_distributions",
-            "issuance_or_purchase_of_equity_shares",
-        ],
-        end_date,
-    )
-
-    # Get current market cap
-    market_cap = get_market_cap(ticker, end_date)
+def warren_buffett(metrics,financial_line_items,market_cap):
 
     # Analyze fundamentals
     fundamental_analysis = analyze_fundamentals(metrics)
@@ -114,8 +74,7 @@ def warren_buffett_agent(ticker: str, end_date: str):
                 """
 
     intro_text = "Based on the following data, create the investment signal as Warren Buffett would:"
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
-    return call_deepseek(prompt, message)
+    return analysis_data, intro_text, prompt
 
 
 def analyze_fundamentals(metrics: list) -> dict[str, any]:

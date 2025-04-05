@@ -10,8 +10,6 @@ from utils.ProgressBar import progress, ProgressStatus, TaskName
 ##### Technical Analyst #####
 def technical_analyst(prices):
 
-    progress.update(TaskName.TECHNICAL_ANALYST, ProgressStatus.WORKING, "技术分析 start")
-
     if not prices:
         progress.update(TaskName.TECHNICAL_ANALYST, ProgressStatus.ERROR, "Failed: No price data found")
 
@@ -88,7 +86,6 @@ def technical_analyst(prices):
             },
         },
     }
-    progress.update(TaskName.TECHNICAL_ANALYST, ProgressStatus.DONE, "技术分析结束")
     return technical_analysis
 
 

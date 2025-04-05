@@ -1,8 +1,6 @@
 import json
 
-
 from dotenv import load_dotenv
-
 
 from strategy.ben_graham import ben_graham
 from strategy.cathie_wood import cathie_wood
@@ -13,6 +11,8 @@ from strategy.sentiment import sentiment
 from strategy.stanley_druckenmiller import stanley_druckenmiller
 from strategy.technicals import technical_analyst
 from strategy.bill_ackman import bill_ackman
+from strategy.valuation import valuation
+from strategy.warren_buffett import warren_buffett
 from tools.api import *
 
 from utils.ProgressBar import progress, ProgressStatus, TaskName
@@ -34,15 +34,15 @@ def main():
         limit=10,
     )
 
-    financial_line_items1 = search_line_items(ticker,["earnings_per_share",
-                                               "revenue", "net_income",
-                                               "book_value_per_share",
-                                               "total_assets",
-                                               "total_liabilities",
-                                               "current_assets",
-                                               "current_liabilities",
-                                               "dividends_and_other_cash_distributions",
-                                               "outstanding_shares"], end_date, period="annual", limit=10)
+    financial_line_items1 = search_line_items(ticker, ["earnings_per_share",
+                                                       "revenue", "net_income",
+                                                       "book_value_per_share",
+                                                       "total_assets",
+                                                       "total_liabilities",
+                                                       "current_assets",
+                                                       "current_liabilities",
+                                                       "dividends_and_other_cash_distributions",
+                                                       "outstanding_shares"], end_date, period="annual", limit=10)
     financial_line_items2 = search_line_items(
         ticker,
         [
@@ -60,21 +60,21 @@ def main():
         limit=5  # fetch up to 5 annual periods (or more if needed)
     )
 
-    financial_line_items3 = search_line_items( ticker, [
-            "revenue",
-            "gross_margin",
-            "operating_margin",
-            "debt_to_equity",
-            "free_cash_flow",
-            "total_assets",
-            "total_liabilities",
-            "dividends_and_other_cash_distributions",
-            "outstanding_shares",
-            "research_and_development",
-            "capital_expenditure",
-            "operating_expense",
+    financial_line_items3 = search_line_items(ticker, [
+        "revenue",
+        "gross_margin",
+        "operating_margin",
+        "debt_to_equity",
+        "free_cash_flow",
+        "total_assets",
+        "total_liabilities",
+        "dividends_and_other_cash_distributions",
+        "outstanding_shares",
+        "research_and_development",
+        "capital_expenditure",
+        "operating_expense",
 
-        ], end_date, period="annual", limit=5)
+    ], end_date, period="annual", limit=5)
 
     financial_line_items4 = search_line_items(
         ticker,
@@ -144,7 +144,34 @@ def main():
         limit=5,
     )
 
-    market_cap = get_market_cap(ticker, end_date)
+    financial_line_items7 = search_line_items(
+        ticker=ticker,
+        line_items=[
+            "free_cash_flow",
+            "net_income",
+            "depreciation_and_amortization",
+            "capital_expenditure",
+            "working_capital",
+        ],
+        end_date=end_date,
+        period="ttm",
+        limit=2,
+    )
+
+    financial_line_items8 = search_line_items(
+        ticker,
+        [
+            "capital_expenditure",
+            "depreciation_and_amortization",
+            "net_income",
+            "outstanding_shares",
+            "total_assets",
+            "total_liabilities",
+            "dividends_and_other_cash_distributions",
+            "issuance_or_purchase_of_equity_shares",
+        ],
+        end_date,
+    )
 
     insider_trades = get_insider_trades(
         ticker=ticker,
@@ -152,7 +179,7 @@ def main():
         limit=1000,
     )
 
-    company_news = get_company_news( ticker, end_date,  start_date=None)
+    company_news = get_company_news(ticker, end_date, start_date=None)
     market_cap = get_market_cap(ticker, end_date)
     prices = get_prices(ticker, start_date=start_date, end_date=end_date)
 
@@ -175,57 +202,77 @@ def main():
 
     # 3 凯茜·伍德策略
     progress.update(TaskName.CATHIE_WOOD, ProgressStatus.WORKING, TaskName.CATHIE_WOOD.chinese + "分析 开始")
-    analysis_data, intro_text, prompt=cathie_wood(metrics_annual_10[:5], financial_line_items3, market_cap)
+    analysis_data, intro_text, prompt = cathie_wood(metrics_annual_10[:5], financial_line_items3, market_cap)
     message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
     response["cathie_wood"] = call_deepseek(prompt, message)
     progress.update(TaskName.CATHIE_WOOD, ProgressStatus.DONE, TaskName.CATHIE_WOOD.chinese + "分析 结束")
 
     # 4 查理·芒格策略
     progress.update(TaskName.CHARLIE_MUNGER, ProgressStatus.WORKING, TaskName.CHARLIE_MUNGER.chinese + "分析 开始")
-    analysis_data, intro_text, prompt=charlie_munger(metrics_annual_10, financial_line_items4,insider_trades[:100],market_cap, company_news[:100])
+    analysis_data, intro_text, prompt = charlie_munger(metrics_annual_10, financial_line_items4, insider_trades[:100],
+                                                       market_cap, company_news[:100])
     message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
     response["charlie_munger"] = call_deepseek(prompt, message)
     progress.update(TaskName.CHARLIE_MUNGER, ProgressStatus.DONE, TaskName.CHARLIE_MUNGER.chinese + "分析 结束")
 
     # 5 最近的历史基本面分析
     progress.update(TaskName.FUNDAMENTALS, ProgressStatus.WORKING, TaskName.FUNDAMENTALS.chinese + "分析 开始")
-    response["fundamentals"] =fundamentals(metrics_ttm_limit_10)
+    response["fundamentals"] = fundamentals(metrics_ttm_limit_10)
     progress.update(TaskName.FUNDAMENTALS, ProgressStatus.DONE, TaskName.FUNDAMENTALS.chinese + "分析 结束")
 
     # 6 菲尔·费舍尔策略
     progress.update(TaskName.PHIL_FISHER, ProgressStatus.WORKING, TaskName.PHIL_FISHER.chinese + "分析 开始")
-    analysis_data, intro_text, prompt = phil_fisher(financial_line_items5, market_cap, insider_trades[:50], company_news[:50])
+    analysis_data, intro_text, prompt = phil_fisher(financial_line_items5, market_cap, insider_trades[:50],
+                                                    company_news[:50])
     message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
     response["phil_fisher"] = call_deepseek(prompt, message)
     progress.update(TaskName.PHIL_FISHER, ProgressStatus.DONE, TaskName.PHIL_FISHER.chinese + "分析 结束")
 
     # 7 新闻情绪分析
     progress.update(TaskName.SENTIMENT, ProgressStatus.WORKING, TaskName.SENTIMENT.chinese + "分析 开始")
-    response["sentiment"]= sentiment(insider_trades, company_news)
+    response["sentiment"] = sentiment(insider_trades, company_news)
     progress.update(TaskName.SENTIMENT, ProgressStatus.DONE, TaskName.SENTIMENT.chinese + "分析 结束")
 
     # 8 德鲁肯米勒策略
-    progress.update(TaskName.STANLEY_DRUCKENMILLER, ProgressStatus.WORKING, TaskName.STANLEY_DRUCKENMILLER.chinese + "分析 开始")
-    analysis_data, intro_text, prompt =stanley_druckenmiller(prices, financial_line_items6, company_news[:50], insider_trades[:50], market_cap)
+    progress.update(TaskName.STANLEY_DRUCKENMILLER, ProgressStatus.WORKING,
+                    TaskName.STANLEY_DRUCKENMILLER.chinese + "分析 开始")
+    analysis_data, intro_text, prompt = stanley_druckenmiller(prices, financial_line_items6, company_news[:50],
+                                                              insider_trades[:50], market_cap)
     message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
     response["stanley_druckenmiller"] = call_deepseek(prompt, message)
     progress.update(TaskName.STANLEY_DRUCKENMILLER, ProgressStatus.DONE, TaskName.STANLEY_DRUCKENMILLER.chinese + "分析 结束")
 
+    # 9 技术分析
+    progress.update(TaskName.TECHNICAL_ANALYST, ProgressStatus.WORKING,
+                    TaskName.TECHNICAL_ANALYST.chinese + "分析 开始")
+    response["technical_analyst"] = technical_analyst(prices)
+    progress.update(TaskName.TECHNICAL_ANALYST, ProgressStatus.DONE, TaskName.TECHNICAL_ANALYST.chinese + "分析 结束")
 
+    # 10 DCF策略&巴菲特策略
+    progress.update(TaskName.VALUATION, ProgressStatus.WORKING, TaskName.VALUATION.chinese + "分析 开始")
+    response["valuation"] = valuation(metrics_ttm_limit_10, financial_line_items7, market_cap)
+    progress.update(TaskName.VALUATION, ProgressStatus.DONE, TaskName.VALUATION.chinese + "分析 结束")
+
+    # 11 巴菲特策略
+    progress.update(TaskName.WARREN_BUFFETT, ProgressStatus.WORKING, TaskName.WARREN_BUFFETT.chinese + "分析 开始")
+    analysis_data, intro_text, prompt = warren_buffett(metrics_ttm_limit_10[:5], financial_line_items8, market_cap)
+    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
+    response["warren_buffett"] = call_deepseek(prompt, message)
+    progress.update(TaskName.WARREN_BUFFETT, ProgressStatus.DONE, TaskName.WARREN_BUFFETT.chinese + "分析 结束")
 
     print(json.dumps(response, indent=4, ensure_ascii=False))
 
 
 if __name__ == '__main__':
-    load_dotenv()         # 加载环境变量
-    progress.start()      # 启动进度条（或类似的可视化输出）
+    load_dotenv()  # 加载环境变量
+    progress.start()  # 启动进度条（或类似的可视化输出）
 
     try:
-        main()            # 执行主逻辑
+        main()  # 执行主逻辑
     except Exception as e:
         print(f"Error: {e}")  # 捕获并打印异常
     finally:
-        progress.stop()   # 无论是否报错都停止进度显示
+        progress.stop()  # 无论是否报错都停止进度显示
 
     # # 获取今天日期作为结束日期
     # end_date = datetime.date.today()
@@ -243,7 +290,6 @@ if __name__ == '__main__':
     #
     # print(json.dumps(agent, indent=4, ensure_ascii=False))
 
-
     # agent = sentiment_agent(ticker="soun", end_date="2025-03-01")
     # print(agent)
     # news = get_company_news(ticker="AAPL", start_date="2023-01-01", end_date="2023-10-01" )
@@ -256,9 +302,3 @@ if __name__ == '__main__':
     #                                       "total_assets", "total_liabilities", "current_assets", "current_liabilities",
     #                                       "dividends_and_other_cash_distributions", "outstanding_shares"],
     #                           end_date="2023-10-01", period="annual", limit=10)
-
-
-
-
-
-
