@@ -1,28 +1,8 @@
 
-from tools.api import (
-    get_financial_metrics,
-    get_market_cap,
-    search_line_items,
-    get_insider_trades,
-    get_company_news,
-    get_prices, call_deepseek,
-)
-
-from pydantic import BaseModel
-import json
-from typing_extensions import Literal
 import statistics
 
-from utils.constants import TEMPLATE
 
-
-class StanleyDruckenmillerSignal(BaseModel):
-    signal: Literal["bullish", "bearish", "neutral"]
-    confidence: float
-    reasoning: str
-
-
-def stanley_druckenmiller_agent(ticker,start_date,end_date):
+def stanley_druckenmiller(prices,financial_line_items,company_news,insider_trades,market_cap):
     """
     Analyzes stocks using Stanley Druckenmiller's investing principles:
       - Seeking asymmetric risk-reward opportunities
@@ -32,47 +12,6 @@ def stanley_druckenmiller_agent(ticker,start_date,end_date):
 
     Returns a bullish/bearish/neutral signal with confidence and reasoning.
     """
-
-
-
-    metrics = get_financial_metrics(ticker, end_date, period="annual", limit=5)
-
-    # Include relevant line items for Stan Druckenmiller's approach:
-    #   - Growth & momentum: revenue, EPS, operating_income, ...
-    #   - Valuation: net_income, free_cash_flow, ebit, ebitda
-    #   - Leverage: total_debt, shareholders_equity
-    #   - Liquidity: cash_and_equivalents
-    financial_line_items = search_line_items(
-        ticker,
-        [
-            "revenue",
-            "earnings_per_share",
-            "net_income",
-            "operating_income",
-            "gross_margin",
-            "operating_margin",
-            "free_cash_flow",
-            "capital_expenditure",
-            "cash_and_equivalents",
-            "total_debt",
-            "shareholders_equity",
-            "outstanding_shares",
-            "ebit",
-            "ebitda",
-        ],
-        end_date,
-        period="annual",
-        limit=5,
-    )
-
-    market_cap = get_market_cap(ticker, end_date)
-
-    insider_trades = get_insider_trades(ticker, end_date, start_date=None, limit=50)
-
-    company_news = get_company_news(ticker, end_date, start_date=None, limit=50)
-
-    prices = get_prices(ticker, start_date=start_date, end_date=end_date)
-
     growth_momentum_analysis = analyze_growth_and_momentum(financial_line_items, prices)
 
     sentiment_analysis = analyze_sentiment(company_news)
@@ -142,9 +81,7 @@ def stanley_druckenmiller_agent(ticker,start_date,end_date):
               For example, if bearish: "Despite recent stock momentum, revenue growth has decelerated from 30% to 12% YoY, and operating margins are contracting. The risk-reward proposition is unfavorable with limited 10% upside potential against 40% downside risk. The competitive landscape is intensifying, and insider selling suggests waning confidence. I'm seeing better opportunities elsewhere with more favorable setups..."
               """
     intro_text = "Based on the following analysis, create a Druckenmiller-style investment signal."
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
-
-    return call_deepseek(prompt, message)
+    return analysis_data, intro_text, prompt
 
 
 def analyze_growth_and_momentum(financial_line_items: list, prices: list) -> dict:

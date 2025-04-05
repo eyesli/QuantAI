@@ -1,18 +1,10 @@
-
-from tools.api import (
-    get_financial_metrics,
-    get_market_cap,
-    search_line_items,
-    get_insider_trades,
-    get_company_news, call_deepseek,
-)
-
+# -*- coding: utf-8 -*-
 import statistics
 
 from utils.constants import TEMPLATE
 
 
-def phil_fisher_agent(ticker,end_date):
+def phil_fisher(financial_line_items,market_cap,insider_trades,company_news):
     """
     Analyzes stocks using Phil Fisher's investing principles:
       - Seek companies with long-term above-average growth potential
@@ -34,33 +26,7 @@ def phil_fisher_agent(ticker,end_date):
     #   - Margins & Stability: operating_income, operating_margin, gross_margin
     #   - Management Efficiency & Leverage: total_debt, shareholders_equity, free_cash_flow
     #   - Valuation: net_income, free_cash_flow (for P/E, P/FCF), ebit, ebitda
-    financial_line_items = search_line_items(
-        ticker,
-        [
-            "revenue",
-            "net_income",
-            "earnings_per_share",
-            "free_cash_flow",
-            "research_and_development",
-            "operating_income",
-            "operating_margin",
-            "gross_margin",
-            "total_debt",
-            "shareholders_equity",
-            "cash_and_equivalents",
-            "ebit",
-            "ebitda",
-        ],
-        end_date,
-        period="annual",
-        limit=5,
-    )
 
-    market_cap = get_market_cap(ticker, end_date)
-
-    insider_trades = get_insider_trades(ticker, end_date, start_date=None, limit=50)
-
-    company_news = get_company_news(ticker, end_date, start_date=None, limit=50)
 
     growth_quality = analyze_fisher_growth_quality(financial_line_items)
 
@@ -139,9 +105,8 @@ def phil_fisher_agent(ticker,end_date):
               """
 
     intro_text = "Based on the following analysis, create a Phil Fisher-style investment signal."
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
 
-    return call_deepseek(prompt, message)
+    return analysis_data, intro_text, prompt
 
 
 

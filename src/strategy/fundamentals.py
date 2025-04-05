@@ -1,13 +1,11 @@
 
-import json
 
-from tools.api import get_financial_metrics
 
 from utils.ProgressBar import progress, ProgressStatus, TaskName
 
 
 ##### Fundamental Agent #####
-def fundamentals():
+def fundamentals(financial_metrics):
     """Analyzes fundamental data and generates trading signals for multiple tickers."""
 
     # Get the financial metrics
