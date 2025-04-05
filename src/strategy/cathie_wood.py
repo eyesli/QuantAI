@@ -1,12 +1,5 @@
 
-from tools.api import get_financial_metrics, get_market_cap, search_line_items, call_deepseek
-
-import json
-
-from utils.constants import TEMPLATE
-
-
-def cathie_wood_agent(ticker,end_date):
+def cathie_wood(metrics, financial_line_items,market_cap):
     """
     Analyzes stocks using Cathie Wood's investing principles and LLM reasoning.
     1. Prioritizes companies with breakthrough technologies or business models
@@ -14,35 +7,6 @@ def cathie_wood_agent(ticker,end_date):
     3. Invests mostly in AI, robotics, genomic sequencing, fintech, and blockchain.
     4. Willing to endure short-term volatility for long-term gains.
     """
-
-    cw_analysis = {}
-
-    metrics = get_financial_metrics(ticker, end_date, period="annual", limit=5)
-
-    # Request multiple periods of data (annual or TTM) for a more robust view.
-    financial_line_items = search_line_items(
-        ticker,
-        [
-            "revenue",
-            "gross_margin",
-            "operating_margin",
-            "debt_to_equity",
-            "free_cash_flow",
-            "total_assets",
-            "total_liabilities",
-            "dividends_and_other_cash_distributions",
-            "outstanding_shares",
-            "research_and_development",
-            "capital_expenditure",
-            "operating_expense",
-
-        ],
-        end_date,
-        period="annual",
-        limit=5
-    )
-
-    market_cap = get_market_cap(ticker, end_date)
 
     disruptive_analysis = analyze_disruptive_potential(metrics, financial_line_items)
 
@@ -100,9 +64,7 @@ def cathie_wood_agent(ticker,end_date):
             """
 
     intro_text = "Based on the following analysis, create a Cathie Wood-style investment signal."
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
-
-    return call_deepseek(prompt, message)
+    return analysis_data, intro_text, prompt
 
 
 

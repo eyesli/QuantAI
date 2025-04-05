@@ -13,50 +13,7 @@ def charlie_munger_agent(ticker, end_date):
     Focuses on moat strength, management quality, predictability, and valuation.
     """
 
-    metrics = get_financial_metrics(ticker, end_date, period="annual", limit=10)  # Munger looks at longer periods
 
-    financial_line_items = search_line_items(
-        ticker,
-        [
-            "revenue",
-            "net_income",
-            "operating_income",
-            "return_on_invested_capital",
-            "gross_margin",
-            "operating_margin",
-            "free_cash_flow",
-            "capital_expenditure",
-            "cash_and_equivalents",
-            "total_debt",
-            "shareholders_equity",
-            "outstanding_shares",
-            "research_and_development",
-            "goodwill_and_intangible_assets",
-        ],
-        end_date,
-        period="annual",
-        limit=10  # Munger examines long-term trends
-    )
-
-    market_cap = get_market_cap(ticker, end_date)
-
-    # Munger values management with skin in the game
-    insider_trades = get_insider_trades(
-        ticker,
-        end_date,
-        # Look back 2 years for insider trading patterns
-        start_date=None,
-        limit=100
-    )
-
-    # Munger avoids businesses with frequent negative press
-    company_news = get_company_news(
-        ticker,
-        end_date,
-        # Look back 1 year for news
-        start_date=None,
-        limit=100
-    )
 
     moat_analysis = analyze_moat_strength(metrics, financial_line_items)
 

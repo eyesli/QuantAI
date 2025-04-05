@@ -71,6 +71,11 @@ def get_prices(ticker: str, start_date: str, end_date: str) -> list[Price]:
     return prices
 
 
+# Historical
+# Get financial metrics for a ticker, including valuation, profitability, efficiency, liquidity, leverage, growth, and per share metrics.
+
+# 历史数据
+# 获取某个股票代码的财务指标，包括估值、盈利能力、效率、流动性、杠杆、增长以及每股指标。
 def get_financial_metrics(
     ticker: str,
     end_date: str,
