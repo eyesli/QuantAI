@@ -1,13 +1,11 @@
 
-from tools.api import get_financial_metrics, get_market_cap, search_line_items, get_insider_trades, get_company_news, \
-    call_deepseek
 from utils.constants import TEMPLATE
 
 
 
 
 
-def charlie_munger_agent(ticker, end_date):
+def charlie_munger(metrics,financial_line_items,insider_trades,market_cap,company_news):
     """
     Analyzes stocks using Charlie Munger's investing principles and mental models.
     Focuses on moat strength, management quality, predictability, and valuation.
@@ -89,9 +87,7 @@ def charlie_munger_agent(ticker, end_date):
             """
 
     intro_text = "Based on the following analysis, create a Munger-style investment signal."
-    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
-
-    return call_deepseek(prompt, message)
+    return analysis_data, intro_text, prompt
 
 
 def analyze_moat_strength(metrics: list, financial_line_items: list) -> dict:

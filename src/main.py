@@ -4,7 +4,7 @@ import json
 from dotenv import load_dotenv
 from strategy.ben_graham import ben_graham
 from strategy.cathie_wood import cathie_wood
-from strategy.charlie_munger import charlie_munger_agent
+from strategy.charlie_munger import charlie_munger
 from strategy.fundamentals import fundamentals_agent
 from strategy.sentiment import sentiment_agent
 from strategy.technicals import technical_analyst
@@ -18,13 +18,23 @@ from utils.constants import TEMPLATE
 
 
 def main():
-    ticker = "GOOGL"
+    ticker = "NVDA"
     start_date = "2025-01-01"
-    end_date = "2025-4-05"
+    end_date = "2025-04-05"
     progress.update(TaskName.PREPARE_DATA, ProgressStatus.WORKING, "获取数据开始")
     # prices = get_prices( ticker=ticker, start_date=start_date, end_date=end_date)
     metrics_limit_10 = get_financial_metrics(ticker, end_date, period="annual", limit=10)
     metrics_limit_5 = get_financial_metrics(ticker, end_date, period="annual", limit=5)
+
+    metrics_ttm_limit_10 = get_financial_metrics(
+        ticker=ticker,
+        end_date=end_date,
+        period="ttm",
+        limit=10,
+    )
+
+
+
     financial_line_items1 = search_line_items(ticker,["earnings_per_share",
                                                "revenue", "net_income",
                                                "book_value_per_share",
@@ -67,15 +77,49 @@ def main():
 
         ], end_date, period="annual", limit=5)
 
+    financial_line_items4 = search_line_items(
+        ticker,
+        [
+            "revenue",
+            "net_income",
+            "operating_income",
+            "return_on_invested_capital",
+            "gross_margin",
+            "operating_margin",
+            "free_cash_flow",
+            "capital_expenditure",
+            "cash_and_equivalents",
+            "total_debt",
+            "shareholders_equity",
+            "outstanding_shares",
+            "research_and_development",
+            "goodwill_and_intangible_assets",
+        ],
+        end_date,
+        period="annual",
+        limit=10  # Munger examines long-term trends
+    )
+
     market_cap = get_market_cap(ticker, end_date)
 
+    # Munger values management with skin in the game
+    insider_trades = get_insider_trades(
+        ticker,
+        end_date,
+        # Look back 2 years for insider trading patterns
+        start_date=None,
+        limit=100
+    )
 
-
-
-
-
+    # Munger avoids businesses with frequent negative press
+    company_news = get_company_news( ticker, end_date,
+        # Look back 1 year for news
+        start_date=None,
+        limit=100
+    )
 
     progress.update(TaskName.PREPARE_DATA, ProgressStatus.DONE, "数据获取完成")
+
     response = {}
     # 1 本·格雷厄姆策略
     progress.update(TaskName.BEN_GRAHAM, ProgressStatus.WORKING, TaskName.BEN_GRAHAM.chinese + "分析 开始")
@@ -95,9 +139,12 @@ def main():
     message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
     response["cathie_wood"] = call_deepseek(prompt, message)
     progress.update(TaskName.CATHIE_WOOD, ProgressStatus.DONE, TaskName.CATHIE_WOOD.chinese + "分析 结束")
-    #
-
-
+    # 4 查理·芒格策略
+    progress.update(TaskName.CHARLIE_MUNGER, ProgressStatus.WORKING, TaskName.CHARLIE_MUNGER.chinese + "分析 开始")
+    analysis_data, intro_text, prompt=charlie_munger(metrics_limit_10, financial_line_items4,insider_trades,market_cap, company_news)
+    message = TEMPLATE.format(intro=intro_text, ticker=ticker, analysis_data=analysis_data)
+    response["charlie_munger"] = call_deepseek(prompt, message)
+    progress.update(TaskName.CHARLIE_MUNGER, ProgressStatus.DONE, TaskName.CHARLIE_MUNGER.chinese + "分析 结束")
     print(response)
 
 

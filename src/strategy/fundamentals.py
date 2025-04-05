@@ -7,16 +7,10 @@ from utils.ProgressBar import progress, ProgressStatus, TaskName
 
 
 ##### Fundamental Agent #####
-def fundamentals_agent(ticker: str, end_date: str):
+def fundamentals():
     """Analyzes fundamental data and generates trading signals for multiple tickers."""
 
     # Get the financial metrics
-    financial_metrics = get_financial_metrics(
-        ticker=ticker,
-        end_date=end_date,
-        period="ttm",
-        limit=10,
-    )
 
     if not financial_metrics:
         progress.update(TaskName.FUNDAMENTALS, ProgressStatus.ERROR, "没有 financial_metrics 数据 ")
